@@ -193,6 +193,8 @@ function renderMainBoard() {
       const tr = document.createElement('tr');
       if (task.status === 'done') tr.style.opacity = '0.6';
       
+      tr.onclick = () => openTaskPanel(task.id);
+
       if (task.priority === 'alta') tr.classList.add('is-alta');
 
       // Sort priority pill
