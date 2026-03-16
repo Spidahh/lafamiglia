@@ -1252,15 +1252,32 @@ mark {
    ============================================================ */
 @media (max-width: 768px) {
 
-  /* Header */
-  .app-header      { padding: 0 12px; gap: 8px; height: 52px; }
+  /* Header — 2 righe su mobile: [brand + azioni] / [tab] */
+  .app-header {
+    padding: 8px 12px 0;
+    height: auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+  }
+  .header-brand    { flex: 1 1 auto; order: 1; padding: 4px 0; }
   .brand-name      { font-size: 0.95rem; }
-  .tab-btn         { padding: 0 10px; font-size: 0.82rem; }
+  .header-actions  { flex: 0 0 auto; order: 2; gap: 6px; padding: 4px 0; }
+  .main-tabs {
+    order: 3;
+    flex: 0 0 100%;
+    height: 40px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin: 0 -12px;
+    padding: 0 4px;
+    box-sizing: content-box;
+  }
+  .tab-btn         { padding: 0 12px; font-size: 0.83rem; }
   .tab-badge       { display: none; }
   .btn-label       { display: none; }
   .btn-plus        { font-size: 1.1rem; }
   .btn-primary     { padding: 7px 10px; }
-  .btn-icon-header { width: 30px; height: 30px; font-size: 0.9rem; }
+  .btn-icon-header { width: 32px; height: 32px; font-size: 0.9rem; }
 
   /* Bars */
   .cat-chips-bar   { padding: 8px 12px; }
