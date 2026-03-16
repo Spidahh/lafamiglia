@@ -91,6 +91,16 @@ function applyFilters() {
   renderMainBoard();
 }
 
+// Optional sorting state
+let currentSortCol = 'default';
+let sortDirection = 1;
+
+function setSort(col) {
+  if (currentSortCol === col) sortDirection *= -1;
+  else { currentSortCol = col; sortDirection = 1; }
+  renderMainBoard();
+}
+
 function renderMainBoard() {
   const tbody = document.getElementById('tableBody');
   const title = document.getElementById('boardTitle');
@@ -99,8 +109,14 @@ function renderMainBoard() {
   if (!activeRootId) {
     title.textContent = "Seleziona o crea una Proprietà";
     tbody.innerHTML = '';
-    noRes.style.display = 'block';
-    noRes.textContent = "Nessuna proprietà selezionata.";
+    noRes.style.display = 'flex';
+    noRes.style.flexDirection = 'column';
+    noRes.style.alignItems = 'center';
+    noRes.style.gap = '16px';
+    noRes.innerHTML = `
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <div style="color:var(--text-muted); font-size:1.1rem;">Nessuna proprietà selezionata.</div>
+    `;
     return;
   }
 
@@ -136,29 +152,50 @@ function renderMainBoard() {
   tbody.innerHTML = '';
   
   if (tasks.length === 0) {
-    noRes.style.display = 'block';
+    noRes.style.display = 'flex';
+    noRes.style.flexDirection = 'column';
+    noRes.style.alignItems = 'center';
+    noRes.style.gap = '16px';
+    
     if(q || fCat!=='all' || fStat!=='all') {
-      noRes.textContent = "Nessun progetto corrisponde ai criteri di ricerca.";
+      noRes.innerHTML = `
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <div style="color:var(--text-muted); font-size:1.1rem;">Nessun progetto corrisponde ai criteri di ricerca.</div>
+      `;
     } else {
-      noRes.textContent = "Nessun progetto in questa casa. Creane uno per iniziare.";
+      noRes.innerHTML = `
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+        <div style="color:var(--text-muted); font-size:1.1rem;">Nessun progetto in questa casa. Creane uno per iniziare.</div>
+      `;
     }
   } else {
     noRes.style.display = 'none';
     
-    // Ordine di default: Non completati prima, più recenti in alto.
-    tasks.sort((a,b) => {
-      if(a.status === 'done' && b.status !== 'done') return 1;
-      if(b.status === 'done' && a.status !== 'done') return -1;
-      return b.createdAt - a.createdAt;
-    });
+    // Sort logic
+    if (currentSortCol === 'title') {
+      tasks.sort((a,b) => a.title.localeCompare(b.title) * sortDirection);
+    } else if (currentSortCol === 'status') {
+      const w = { 'todo': 1, 'doing': 2, 'waiting': 3, 'done': 4 };
+      tasks.sort((a,b) => (w[a.status] - w[b.status]) * sortDirection);
+    } else if (currentSortCol === 'prio') {
+      const w = { 'alta': 1, 'normale': 2, 'bassa': 3 };
+      tasks.sort((a,b) => (w[a.priority] - w[b.priority]) * sortDirection);
+    } else {
+      // Ordine di default: Non completati prima, più recenti in alto.
+      tasks.sort((a,b) => {
+        if(a.status === 'done' && b.status !== 'done') return 1;
+        if(b.status === 'done' && a.status !== 'done') return -1;
+        return b.createdAt - a.createdAt;
+      });
+    }
 
     tasks.forEach(task => {
       const tr = document.createElement('tr');
       if (task.status === 'done') tr.style.opacity = '0.6';
       
-      tr.onclick = () => openTaskPanel(task.id);
+      if (task.priority === 'alta') tr.classList.add('is-alta');
 
-      // Priorità pill
+      // Sort priority pill
       let prioHtml = '';
       if(task.priority === 'alta') prioHtml = `<span class="prio-pill pr-alta">Urgente</span>`;
       else if(task.priority === 'normale') prioHtml = `<span class="prio-pill pr-normale">—</span>`;
@@ -172,17 +209,24 @@ function renderMainBoard() {
           ${hasLogs ? task.logs.length : '0'}
         </span>
       `;
+      
+      // Highlight search text helper
+      const hl = (txt) => {
+        if (!q) return escHtml(txt);
+        const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return escHtml(txt).replace(regex, '<mark style="background:#FEF08A; padding:0 2px; border-radius:2px;">$1</mark>');
+      };
 
       tr.innerHTML = `
         <td style="text-align: center;"><span class="status-dot s-dot-${task.status}"></span></td>
         <td>
           <div style="display:flex; flex-direction:column; gap:2px;">
-             ${task.category ? `<span class="cat-badge" style="font-size: 0.75rem; text-transform:uppercase; color:var(--text-muted);">${escHtml(task.category)}</span>` : ''}
-             <span class="row-title" style="${task.status==='done'?'text-decoration:line-through':''}">${escHtml(task.title)}</span>
+             ${task.category ? `<span class="cat-badge" style="font-size: 0.75rem; text-transform:uppercase; color:var(--text-muted);">${hl(task.category)}</span>` : ''}
+             <span class="row-title" style="${task.status==='done'?'text-decoration:line-through':''}">${hl(task.title)}</span>
           </div>
-          ${hasLogs ? `<span class="row-context">${escHtml(task.logs[task.logs.length-1].text).substring(0, 60)}...</span>` : ''}
+          ${hasLogs ? `<span class="row-context">${hl(task.logs[task.logs.length-1].text).substring(0, 80)}${task.logs[task.logs.length-1].text.length > 80 ? '...' : ''}</span>` : ''}
         </td>
-        <td><span class="cat-badge">${escHtml(task.category) || '-'}</span></td>
+        <td><span class="cat-badge">${hl(task.category) || '-'}</span></td>
         <td><span class="status-pill sp-${task.status}">${STATUS_LABELS[task.status]}</span></td>
         <td style="text-align: center;">${prioHtml}</td>
         <td style="text-align: right;">${logHtml}</td>
@@ -229,15 +273,16 @@ function renderPanelTimeline(task) {
 
   sortedLogs.forEach(log => {
     const d = new Date(log.date);
-    const dateStr = d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const dateStr = d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year:'numeric' });
+    const timeStr = d.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' });
 
     const el = document.createElement('div');
     el.className = 'log-item';
     el.innerHTML = `
-      <div class="log-dot">📌</div>
+      <div class="log-dot">📝</div>
       <div class="log-content">
         <div class="log-date">
-          <span>${dateStr}</span>
+          <span><strong style="color:var(--text-main); font-weight:700;">${dateStr}</strong> &bull; ${timeStr}</span>
           <button class="log-del" title="Elimina nota" onclick="handleDeleteLog('${log.id}')">✕</button>
         </div>
         <div class="log-text">${escHtml(log.text)}</div>
