@@ -179,23 +179,27 @@
         <button class="modal-close-btn" onclick="closeModal('peopleModal')">×</button>
       </div>
       <div class="people-list" id="peopleList"></div>
-      <div class="add-person-section">
-        <div class="add-person-label">+ Aggiungi persona</div>
-        <div class="frm-group">
-          <label>Nome *</label>
-          <input type="text" id="inpNewPerson" placeholder="Es. Giuseppe">
-        </div>
-        <div class="frm-row">
+      <div class="add-person-section" id="addPersonSection">
+        <button class="add-person-toggle" onclick="toggleAddPerson()">
+          <span class="add-person-toggle-icon">＋</span> Aggiungi persona
+        </button>
+        <div class="add-person-form">
           <div class="frm-group">
-            <label>Telefono</label>
-            <input type="tel" id="inpNewPhone" placeholder="+39 320 ...">
+            <label>Nome *</label>
+            <input type="text" id="inpNewPerson" placeholder="Es. Giuseppe">
           </div>
-          <div class="frm-group">
-            <label>Mansione</label>
-            <input type="text" id="inpNewRole" placeholder="Es. Idraulico">
+          <div class="frm-row">
+            <div class="frm-group">
+              <label>Telefono</label>
+              <input type="tel" id="inpNewPhone" placeholder="+39 320 ...">
+            </div>
+            <div class="frm-group">
+              <label>Mansione</label>
+              <input type="text" id="inpNewRole" placeholder="Es. Idraulico">
+            </div>
           </div>
+          <button class="btn-solid" style="width:100%;" onclick="handleAddPerson()">+ Aggiungi</button>
         </div>
-        <button class="btn-solid" style="width:100%;" onclick="handleAddPerson()">+ Aggiungi</button>
       </div>
       <div class="modal-footer">
         <button class="btn-solid" onclick="closeModal('peopleModal')">Chiudi</button>

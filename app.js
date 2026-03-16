@@ -690,7 +690,15 @@ function openPeopleModal() {
   document.getElementById('inpNewPerson').value = '';
   document.getElementById('inpNewPhone').value  = '';
   document.getElementById('inpNewRole').value   = '';
+  document.getElementById('addPersonSection')?.classList.remove('open');
   document.getElementById('peopleModal').classList.add('open');
+}
+
+function toggleAddPerson() {
+  document.getElementById('addPersonSection').classList.toggle('open');
+  if (document.getElementById('addPersonSection').classList.contains('open')) {
+    setTimeout(() => document.getElementById('inpNewPerson').focus(), 300);
+  }
 }
 
 function renderPeopleList() {
@@ -765,6 +773,7 @@ function handleAddPerson() {
   document.getElementById('inpNewPerson').value = '';
   document.getElementById('inpNewPhone').value  = '';
   document.getElementById('inpNewRole').value   = '';
+  document.getElementById('addPersonSection')?.classList.remove('open');
   renderPeopleList();
   const np = document.getElementById('newTaskAssignees');
   if (np && np.children.length) renderAssigneePicker('newTaskAssignees', getCheckedAssignees('newTaskAssignees'));
