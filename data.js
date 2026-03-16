@@ -1,8 +1,6 @@
 // ============================================================
-//  La Famiglia – Data Layer V4
+//  La Famiglia – Data Layer V5 (Firebase Firestore)
 // ============================================================
-
-const DB_KEY = 'lafamiglia_v4_db';
 
 const CATEGORIES = ['PISCINA', 'CASA 1', 'CASA 2', 'CASA 3', 'ALTRO'];
 
@@ -27,95 +25,111 @@ const STATUS_LABELS = {
 */
 
 const DEFAULT_DATA = {
-  people: [
-    { name: 'Giuseppe', phone: '', role: 'Idraulico' },
-    { name: 'Marco',    phone: '', role: '' }
-  ],
-  tasks: [
-    {
-      id: 't1', title: 'Manutenzione Piscina (pulizia pre-estate)', category: 'PISCINA',
-      status: 'todo', assignees: ['Giuseppe'],
-      createdAt: Date.now(), startedAt: null, completedAt: null,
-      logs: [{ id: 'l1', date: Date.now() - 86400000, text: 'Chiamare Giuseppe per accordarci sui lavori pre-estivi.' }]
-    },
-    {
-      id: 't2', title: 'Ripristino faretti piscina', category: 'PISCINA',
-      status: 'todo', assignees: [],
-      createdAt: Date.now(), startedAt: null, completedAt: null,
-      logs: [{ id: 'l2', date: Date.now(), text: 'Aggiustare i faretti prima che inizino i bagni serali.' }]
-    },
-    {
-      id: 't3', title: 'Ripristino fughe bordo piscina', category: 'PISCINA',
-      status: 'todo', assignees: [],
-      createdAt: Date.now(), startedAt: null, completedAt: null, logs: []
-    },
-    {
-      id: 't4', title: 'Sistemare contatori casetta', category: 'CASA 1',
-      status: 'todo', assignees: ['Marco'],
-      createdAt: Date.now(), startedAt: null, completedAt: null, logs: []
-    },
-    {
-      id: 't5', title: 'Manutenzione condizionatori', category: 'CASA 2',
-      status: 'doing', assignees: ['Giuseppe'],
-      createdAt: Date.now() - 200000000, startedAt: Date.now() - 100000000, completedAt: null,
-      logs: [{ id: 'l5', date: Date.now() - 50000000, text: 'Prenotato tecnico per il 20.' }]
-    },
-    {
-      id: 't6', title: 'Sistemare doccia in pietra (doccino guasto)', category: 'CASA 3',
-      status: 'waiting', assignees: ['Marco'],
-      createdAt: Date.now(), startedAt: null, completedAt: null,
-      logs: [{ id: 'l6', date: Date.now(), text: 'In attesa del pezzo di ricambio.' }]
-    },
-    {
-      id: 't7', title: 'Verifica impianto fotovoltaico', category: 'ALTRO',
-      status: 'done', assignees: ['Marco'],
-      createdAt: Date.now() - 500000000, startedAt: Date.now() - 400000000, completedAt: Date.now() - 300000000,
-      logs: [{ id: 'l7', date: Date.now() - 300000000, text: 'Controllata app, l\'inverter produce correttamente. Tutto OK.' }]
-    }
-  ]
+  people: [],
+  tasks:  []
 };
 
-function loadDB() {
+// ── In-memory cache ──────────────────────────────────────────
+let _db    = null;   // cache locale
+let _dbRef = null;   // riferimento documento Firestore
+let _onRenderCallback = null;
+let _ignoreNextSnapshot = false; // evita re-render subito dopo scrittura locale
+
+// ── Firebase init ─────────────────────────────────────────────
+async function initFirebase(onReady) {
+  _onRenderCallback = onReady;
+
+  // Se la config non è stata compilata, fallback a localStorage
+  if (!FIREBASE_CONFIG || FIREBASE_CONFIG.projectId === 'INSERISCI_QUI') {
+    console.warn('Firebase non configurato — uso localStorage locale');
+    _db = _loadFromLocalStorage();
+    onReady();
+    return;
+  }
+
   try {
-    const raw = localStorage.getItem(DB_KEY);
-    if (!raw) return initDB();
-    const db = JSON.parse(raw);
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const firestore = firebase.firestore();
+    _dbRef = firestore.collection('lafamiglia').doc('main');
 
-    // Migrazione people: da array di stringhe a array di oggetti
-    if (Array.isArray(db.people) && typeof db.people[0] === 'string') {
-      db.people = db.people.map(n => ({ name: n, phone: '', role: '' }));
+    // Prima lettura
+    const snap = await _dbRef.get();
+    if (snap.exists) {
+      _db = migrateDB(snap.data());
+    } else {
+      // Primo avvio: prova a caricare eventuali dati locali, altrimenti vuoto
+      const local = _loadFromLocalStorage();
+      _db = local.tasks.length > 0 ? local : JSON.parse(JSON.stringify(DEFAULT_DATA));
+      await _dbRef.set(_db);
     }
-    if (!db.people) db.people = [];
 
-    db.tasks = (db.tasks || []).map(t => ({
-      ...t,
-      assignees:   t.assignees   || [],
-      startedAt:   t.startedAt   != null ? t.startedAt   : null,
-      completedAt: t.completedAt != null ? t.completedAt : null,
-      logs:        t.logs        || [],
-      category:    CATEGORIES.includes(t.category) ? t.category : 'ALTRO',
-      status:      t.status      || 'todo'
-    }));
-    // Rimuovi priority residua
-    db.tasks = db.tasks.map(({ priority, ...rest }) => rest);
+    // Listener real-time
+    _dbRef.onSnapshot(snap => {
+      if (_ignoreNextSnapshot) { _ignoreNextSnapshot = false; return; }
+      if (snap.exists) {
+        _db = migrateDB(snap.data());
+        if (_onRenderCallback) _onRenderCallback();
+      }
+    });
 
-    return db;
-  } catch {
-    return initDB();
+    onReady();
+
+  } catch (err) {
+    console.error('Errore Firebase:', err);
+    _db = _loadFromLocalStorage();
+    onReady();
   }
 }
 
-function initDB() {
-  const data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-  saveDB(data);
-  return data;
+// ── Lettura / Scrittura ───────────────────────────────────────
+function loadDB() {
+  return _db || { tasks: [], people: [] };
 }
 
 function saveDB(data) {
-  localStorage.setItem(DB_KEY, JSON.stringify(data));
+  _db = data;
+  if (_dbRef) {
+    _ignoreNextSnapshot = true;
+    _dbRef.set(data).catch(err => {
+      console.error('Errore salvataggio Firestore:', err);
+      _ignoreNextSnapshot = false;
+    });
+  }
 }
 
-// --- Tasks ---
+// ── Migrazione / normalizzazione dati ────────────────────────
+function migrateDB(db) {
+  // Migrazione people: da array di stringhe a array di oggetti
+  if (Array.isArray(db.people) && db.people.length > 0 && typeof db.people[0] === 'string') {
+    db.people = db.people.map(n => ({ name: n, phone: '', role: '' }));
+  }
+  if (!db.people) db.people = [];
+
+  db.tasks = (db.tasks || []).map(t => ({
+    ...t,
+    assignees:   t.assignees   || [],
+    startedAt:   t.startedAt   != null ? t.startedAt   : null,
+    completedAt: t.completedAt != null ? t.completedAt : null,
+    logs:        t.logs        || [],
+    category:    CATEGORIES.includes(t.category) ? t.category : 'ALTRO',
+    status:      t.status      || 'todo'
+  }));
+  db.tasks = db.tasks.map(({ priority, ...rest }) => rest);
+
+  return db;
+}
+
+function _loadFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('lafamiglia_v4_db');
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    return migrateDB(JSON.parse(raw));
+  } catch {
+    return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+}
+
+// ── Tasks ─────────────────────────────────────────────────────
 function getTasks()  { return loadDB().tasks; }
 function getTask(id) { return loadDB().tasks.find(t => t.id === id); }
 
@@ -172,7 +186,7 @@ function deleteTask(id) {
   saveDB(db);
 }
 
-// --- Logs ---
+// ── Logs ──────────────────────────────────────────────────────
 function addLog(taskId, text) {
   const db  = loadDB();
   const idx = db.tasks.findIndex(t => t.id === taskId);
@@ -191,7 +205,7 @@ function deleteLog(taskId, logId) {
   }
 }
 
-// --- People ---
+// ── People ────────────────────────────────────────────────────
 function getPeople() { return loadDB().people || []; }
 
 function addPerson(name, phone, role) {
@@ -209,7 +223,6 @@ function updatePerson(oldName, fields) {
   if (idx === -1) return;
   const newName = fields.name && fields.name.trim() ? fields.name.trim() : oldName;
   db.people[idx] = { name: newName, phone: fields.phone || '', role: fields.role || '' };
-  // Se il nome cambia, aggiorna i task assegnati
   if (newName !== oldName) {
     db.tasks = db.tasks.map(t => ({
       ...t,
@@ -229,7 +242,7 @@ function deletePerson(name) {
   saveDB(db);
 }
 
-// --- Export / Import ---
+// ── Export / Import ───────────────────────────────────────────
 function exportData() {
   const db   = loadDB();
   const json = JSON.stringify(db, null, 2);

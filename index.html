@@ -7,8 +7,21 @@
   <meta name="description" content="Organizzatore lavori di famiglia – casa e villa.">
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
 </head>
 <body>
+
+  <!-- ===== LOADING OVERLAY ===== -->
+  <div id="appLoading" class="app-loading">
+    <div class="app-loading-inner">
+      <span class="app-loading-icon">🏡</span>
+      <div class="app-loading-spinner"></div>
+      <p>Connessione in corso…</p>
+    </div>
+  </div>
 
   <!-- ===== HEADER ===== -->
   <header class="app-header">

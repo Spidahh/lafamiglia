@@ -10,9 +10,17 @@ let sortCol        = 'default';
 let sortDir        = 1;
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderCategoryChips();
-  populateCategorySelects();
-  render();
+  const loader = document.getElementById('appLoading');
+  if (loader) loader.style.display = 'flex';
+
+  initFirebase(() => {
+    if (loader) loader.style.display = 'none';
+    renderCategoryChips();
+    populateCategorySelects();
+    render();
+    // Mantieni pannello aggiornato durante sync real-time
+    if (activeTaskId && getTask(activeTaskId)) openTaskPanel(activeTaskId);
+  });
 });
 
 // ============================================================
