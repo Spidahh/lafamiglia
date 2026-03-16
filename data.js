@@ -1,101 +1,76 @@
 // ============================================================
-//  La Famiglia – Data Layer V3 (Timeline)
-//  Gestione dati con localStorage
+//  La Famiglia – Data Layer V4
 // ============================================================
 
-const DB_KEY = 'lafamiglia_v3_db';
+const DB_KEY = 'lafamiglia_v4_db';
+
+const CATEGORIES = ['PISCINA', 'CASA 1', 'CASA 2', 'CASA 3', 'ALTRO'];
+
+const STATUS_LABELS = {
+  'todo':    'Da iniziare',
+  'doing':   'In lavorazione',
+  'waiting': 'In attesa',
+  'done':    'Completato'
+};
 
 /*
-  Struttura dati:
+  Struttura DB:
   {
-    roots: [{ id, name, icon }],
-    tasks: [{ 
-      id, rootId, title, 
-      status: 'todo' | 'doing' | 'waiting' | 'done',
-      category: 'Piscina' | 'Casette' | 'Impianti' | '',
-      createdAt,
-      logs: [
-        { id, date, text }
-      ]
-    }]
+    tasks: [{
+      id, title, category, status,
+      assignees: ['Nome1'],
+      createdAt, startedAt, completedAt,
+      logs: [{ id, date, text }]
+    }],
+    people: [{ name, phone, role }]
   }
 */
 
 const DEFAULT_DATA = {
-  roots: [
-    { id: 'r1', name: 'Villa a Cozze', icon: '🏖️', createdAt: Date.now() }
+  people: [
+    { name: 'Giuseppe', phone: '', role: 'Idraulico' },
+    { name: 'Marco',    phone: '', role: '' }
   ],
   tasks: [
-    // --- Piscina ---
     {
-      id: 't1', rootId: 'r1', title: 'Manutenzione Piscina (Giuseppe)', status: 'todo', category: 'Piscina', createdAt: Date.now(),
-      logs: [ { id: 'l1_1', date: Date.now() - 86400000, text: 'Chiamare Giuseppe per accordarci sui lavori pre-estivi.' } ]
+      id: 't1', title: 'Manutenzione Piscina (pulizia pre-estate)', category: 'PISCINA',
+      status: 'todo', assignees: ['Giuseppe'],
+      createdAt: Date.now(), startedAt: null, completedAt: null,
+      logs: [{ id: 'l1', date: Date.now() - 86400000, text: 'Chiamare Giuseppe per accordarci sui lavori pre-estivi.' }]
     },
     {
-      id: 't5', rootId: 'r1', title: 'Ripristino faretti piscina', status: 'todo', category: 'Piscina', createdAt: Date.now(),
-      logs: [ { id: 'l5_1', date: Date.now(), text: 'Aggiustare i faretti prima che inizino i bagni serali.' } ]
+      id: 't2', title: 'Ripristino faretti piscina', category: 'PISCINA',
+      status: 'todo', assignees: [],
+      createdAt: Date.now(), startedAt: null, completedAt: null,
+      logs: [{ id: 'l2', date: Date.now(), text: 'Aggiustare i faretti prima che inizino i bagni serali.' }]
     },
     {
-      id: 't14', rootId: 'r1', title: 'Ripristino fughe bordo piscina', status: 'todo', category: 'Piscina', createdAt: Date.now(),
-      logs: []
+      id: 't3', title: 'Ripristino fughe bordo piscina', category: 'PISCINA',
+      status: 'todo', assignees: [],
+      createdAt: Date.now(), startedAt: null, completedAt: null, logs: []
     },
     {
-      id: 't15', rootId: 'r1', title: 'Pitturazione porta vano piscina', status: 'todo', category: 'Piscina', createdAt: Date.now(),
-      logs: []
-    },
-
-    // --- Casette ---
-    {
-      id: 't6', rootId: 'r1', title: 'Sistemare contatori casette', status: 'todo', category: 'Casette', createdAt: Date.now(),
-      logs: []
+      id: 't4', title: 'Sistemare contatori casetta', category: 'CASA 1',
+      status: 'todo', assignees: ['Marco'],
+      createdAt: Date.now(), startedAt: null, completedAt: null, logs: []
     },
     {
-      id: 't7', rootId: 'r1', title: 'Manutenzione condizionatori casette', status: 'todo', category: 'Casette', createdAt: Date.now(),
-      logs: []
+      id: 't5', title: 'Manutenzione condizionatori', category: 'CASA 2',
+      status: 'doing', assignees: ['Giuseppe'],
+      createdAt: Date.now() - 200000000, startedAt: Date.now() - 100000000, completedAt: null,
+      logs: [{ id: 'l5', date: Date.now() - 50000000, text: 'Prenotato tecnico per il 20.' }]
     },
     {
-      id: 't8', rootId: 'r1', title: 'Sistemare luci perimetrali casette (1 guasta)', status: 'todo', category: 'Casette', createdAt: Date.now(),
-      logs: [ { id: 'l8_1', date: Date.now(), text: 'Una luce non funziona, controllare lampadina e contatti.' } ]
+      id: 't6', title: 'Sistemare doccia in pietra (doccino guasto)', category: 'CASA 3',
+      status: 'waiting', assignees: ['Marco'],
+      createdAt: Date.now(), startedAt: null, completedAt: null,
+      logs: [{ id: 'l6', date: Date.now(), text: 'In attesa del pezzo di ricambio.' }]
     },
     {
-      id: 't10', rootId: 'r1', title: 'Sistemare doccia in pietra (doccino guasto)', status: 'todo', category: 'Casette', createdAt: Date.now(),
-      logs: [ { id: 'l10_1', date: Date.now(), text: 'Non esce acqua dal doccino o rompegetto.' } ]
-    },
-    {
-      id: 't11', rootId: 'r1', title: 'Sostituire rubinetto parcheggio', status: 'todo', category: 'Casette', createdAt: Date.now(),
-      logs: []
-    },
-    {
-      id: 't13', rootId: 'r1', title: 'Verificare docce esterne', status: 'todo', category: 'Casette', createdAt: Date.now(),
-      logs: []
-    },
-
-    // --- Esterni / Orto ---
-    {
-      id: 't12', rootId: 'r1', title: 'Sostituire rubinetto + snodo orto', status: 'todo', category: 'Orto', createdAt: Date.now(),
-      logs: []
-    },
-    {
-      id: 't3', rootId: 'r1', title: 'Acquisto Cancelletti bambini (x7) e ombreggianti scala', status: 'todo', category: 'Esterni', createdAt: Date.now(),
-      logs: [ { id: 'l3_1', date: Date.now(), text: 'Servono 7 cancelletti per sicurezza. Prendere misure.' } ]
-    },
-
-    // --- Impianti / Acquisti ---
-    {
-      id: 't2', rootId: 'r1', title: 'Comprare pompa di sentina', status: 'todo', category: 'Impianti', createdAt: Date.now(),
-      logs: []
-    },
-    {
-      id: 't4', rootId: 'r1', title: 'Comprare piano induzione', status: 'todo', category: 'Impianti', createdAt: Date.now(),
-      logs: [ { id: 'l4_1', date: Date.now(), text: 'Cercare offerte su Amazon e Mediaworld.' } ]
-    },
-    {
-      id: 't9', rootId: 'r1', title: 'Verifica pressione Acqua (forse aria)', status: 'todo', category: 'Impianti', createdAt: Date.now(),
-      logs: [ { id: 'l9_1', date: Date.now(), text: 'C’è problema di pressione. Fare sfiatare impianto o chiamare idraulico.' } ]
-    },
-    {
-      id: 't16', rootId: 'r1', title: 'Verifica impianto fotovoltaico', status: 'done', category: 'Impianti', createdAt: Date.now() - 500000000,
-      logs: [ { id: 'l16_1', date: Date.now() - 10000, text: 'Controllata app, l\'inverter produce correttamente.' } ]
+      id: 't7', title: 'Verifica impianto fotovoltaico', category: 'ALTRO',
+      status: 'done', assignees: ['Marco'],
+      createdAt: Date.now() - 500000000, startedAt: Date.now() - 400000000, completedAt: Date.now() - 300000000,
+      logs: [{ id: 'l7', date: Date.now() - 300000000, text: 'Controllata app, l\'inverter produce correttamente. Tutto OK.' }]
     }
   ]
 };
@@ -105,14 +80,25 @@ function loadDB() {
     const raw = localStorage.getItem(DB_KEY);
     if (!raw) return initDB();
     const db = JSON.parse(raw);
-    
-    // Migrazione automatica se mancano campi nuovi a DB esistenti (safety net)
-    db.tasks = db.tasks.map(t => ({
+
+    // Migrazione people: da array di stringhe a array di oggetti
+    if (Array.isArray(db.people) && typeof db.people[0] === 'string') {
+      db.people = db.people.map(n => ({ name: n, phone: '', role: '' }));
+    }
+    if (!db.people) db.people = [];
+
+    db.tasks = (db.tasks || []).map(t => ({
       ...t,
-      status: t.status || (t.done ? 'done' : 'todo'),
-      logs: t.logs || (t.note ? [{ id: 'old', date: t.createdAt, text: t.note }] : []),
-      category: t.category || ''
+      assignees:   t.assignees   || [],
+      startedAt:   t.startedAt   != null ? t.startedAt   : null,
+      completedAt: t.completedAt != null ? t.completedAt : null,
+      logs:        t.logs        || [],
+      category:    CATEGORIES.includes(t.category) ? t.category : 'ALTRO',
+      status:      t.status      || 'todo'
     }));
+    // Rimuovi priority residua
+    db.tasks = db.tasks.map(({ priority, ...rest }) => rest);
+
     return db;
   } catch {
     return initDB();
@@ -129,54 +115,54 @@ function saveDB(data) {
   localStorage.setItem(DB_KEY, JSON.stringify(data));
 }
 
-// --- Roots --- //
-function getRoots() { return loadDB().roots; }
-function addRoot(name, icon) {
-  const db = loadDB();
-  const root = { id: 'r' + Date.now(), name, icon, createdAt: Date.now() };
-  db.roots.push(root);
-  saveDB(db);
-  return root;
-}
-function deleteRoot(id) {
-  const db = loadDB();
-  db.roots = db.roots.filter(r => r.id !== id);
-  db.tasks = db.tasks.filter(t => t.rootId !== id);
-  saveDB(db);
-}
-
-// --- Tasks --- //
-function getTasks(rootId) { return loadDB().tasks.filter(t => t.rootId === rootId); }
+// --- Tasks ---
+function getTasks()  { return loadDB().tasks; }
 function getTask(id) { return loadDB().tasks.find(t => t.id === id); }
 
-function addTask(rootId, title, category) {
+function addTask(title, category, assignees) {
   const db = loadDB();
-  const task = { 
-    id: 't' + Date.now(), rootId, title, 
-    status: 'todo', category: category || '', 
-    createdAt: Date.now(), logs: [] 
+  const task = {
+    id: 't' + Date.now(),
+    title, category: category || 'ALTRO',
+    status: 'todo',
+    assignees: assignees || [],
+    createdAt: Date.now(), startedAt: null, completedAt: null,
+    logs: []
   };
-  db.tasks.unshift(task); // in cima
+  db.tasks.unshift(task);
   saveDB(db);
   return task;
 }
 
 function updateTaskStatus(id, newStatus) {
-  const db = loadDB();
+  const db  = loadDB();
   const idx = db.tasks.findIndex(t => t.id === id);
-  if (idx > -1) { 
-    db.tasks[idx].status = newStatus;
-    // Log automatico del cambio stato se passa a completed/waiting (opzionale)
-    saveDB(db); 
+  if (idx === -1) return;
+  const task = db.tasks[idx];
+  task.status = newStatus;
+
+  if (newStatus === 'todo')  { task.startedAt = null; task.completedAt = null; }
+  if (newStatus === 'doing' && !task.startedAt) task.startedAt = Date.now();
+  if (newStatus === 'done') {
+    if (!task.startedAt) task.startedAt = task.createdAt;
+    task.completedAt = Date.now();
   }
+  if (newStatus !== 'done' && newStatus !== 'todo') task.completedAt = null;
+
+  task.logs.push({
+    id: 'auto' + Date.now(),
+    date: Date.now(),
+    text: '📌 Stato: ' + (STATUS_LABELS[newStatus] || newStatus)
+  });
+  saveDB(db);
 }
 
 function updateTaskDetails(id, fields) {
-  const db = loadDB();
+  const db  = loadDB();
   const idx = db.tasks.findIndex(t => t.id === id);
-  if (idx > -1) { 
+  if (idx > -1) {
     db.tasks[idx] = { ...db.tasks[idx], ...fields };
-    saveDB(db); 
+    saveDB(db);
   }
 }
 
@@ -186,25 +172,87 @@ function deleteTask(id) {
   saveDB(db);
 }
 
-// --- Logs / Diario --- //
+// --- Logs ---
 function addLog(taskId, text) {
-  const db = loadDB();
+  const db  = loadDB();
   const idx = db.tasks.findIndex(t => t.id === taskId);
   if (idx > -1) {
-    db.tasks[idx].logs.push({
-      id: 'l' + Date.now(),
-      date: Date.now(),
-      text
-    });
+    db.tasks[idx].logs.push({ id: 'l' + Date.now(), date: Date.now(), text });
     saveDB(db);
   }
 }
 
 function deleteLog(taskId, logId) {
-  const db = loadDB();
+  const db  = loadDB();
   const idx = db.tasks.findIndex(t => t.id === taskId);
   if (idx > -1) {
     db.tasks[idx].logs = db.tasks[idx].logs.filter(l => l.id !== logId);
     saveDB(db);
   }
+}
+
+// --- People ---
+function getPeople() { return loadDB().people || []; }
+
+function addPerson(name, phone, role) {
+  const db = loadDB();
+  if (!db.people) db.people = [];
+  if (!db.people.find(p => p.name === name)) {
+    db.people.push({ name, phone: phone || '', role: role || '' });
+    saveDB(db);
+  }
+}
+
+function updatePerson(oldName, fields) {
+  const db  = loadDB();
+  const idx = db.people.findIndex(p => p.name === oldName);
+  if (idx === -1) return;
+  const newName = fields.name && fields.name.trim() ? fields.name.trim() : oldName;
+  db.people[idx] = { name: newName, phone: fields.phone || '', role: fields.role || '' };
+  // Se il nome cambia, aggiorna i task assegnati
+  if (newName !== oldName) {
+    db.tasks = db.tasks.map(t => ({
+      ...t,
+      assignees: (t.assignees || []).map(a => a === oldName ? newName : a)
+    }));
+  }
+  saveDB(db);
+}
+
+function deletePerson(name) {
+  const db = loadDB();
+  db.people = (db.people || []).filter(p => p.name !== name);
+  db.tasks  = db.tasks.map(t => ({
+    ...t,
+    assignees: (t.assignees || []).filter(a => a !== name)
+  }));
+  saveDB(db);
+}
+
+// --- Export / Import ---
+function exportData() {
+  const db   = loadDB();
+  const json = JSON.stringify(db, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'lafamiglia_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.tasks) throw new Error('File non valido');
+      saveDB(data);
+      location.reload();
+    } catch {
+      alert('File non valido o corrotto.');
+    }
+  };
+  reader.readAsText(file);
 }

@@ -2,188 +2,209 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>La Famiglia – Archivio Progetti</title>
-  <meta name="description" content="Gestione e archivio progetti di famiglia.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>La Famiglia – Gestione Lavori</title>
+  <meta name="description" content="Organizzatore lavori di famiglia – casa e villa.">
   <link rel="stylesheet" href="style.css">
-  <!-- Font pulito e professionale -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Sidebar Case -->
-  <aside class="sidebar">
-    <div class="logo-area">
-      <div class="logo-icon">🏡</div>
-      <div class="logo-text">La Famiglia</div>
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="brand-icon">🏡</span>
+      <span class="brand-name">La Famiglia</span>
     </div>
-    
-    <div class="section-label">Proprietà</div>
-    
-    <div class="root-list" id="rootList">
-      <!-- Injected by app.js -->
+
+    <nav class="main-tabs" id="mainTabs">
+      <button class="tab-btn active" data-tab="active" onclick="switchTab('active')">
+        Lavori Attivi
+        <span class="tab-badge" id="countActive">0</span>
+      </button>
+      <button class="tab-btn" data-tab="archive" onclick="switchTab('archive')">
+        Archivio
+        <span class="tab-badge archive-badge" id="countArchive">0</span>
+      </button>
+      <button class="tab-btn" data-tab="persona" onclick="switchTab('persona')">
+        Per Persona
+      </button>
+    </nav>
+
+    <div class="header-actions">
+      <button class="btn-primary" onclick="openNewTaskModal()">
+        <span class="btn-plus">+</span>
+        <span class="btn-label">Nuovo Lavoro</span>
+      </button>
+      <button class="btn-icon-header" onclick="openPeopleModal()" title="Gestisci persone">👥</button>
+      <button class="btn-icon-header" onclick="exportData()" title="Esporta dati">⬇️</button>
+      <button class="btn-icon-header" onclick="document.getElementById('importFileInput').click()" title="Importa dati">⬆️</button>
     </div>
-    
-    <button class="add-root-btn" onclick="openNewRootModal()">+ Nuova Proprietà</button>
-  </aside>
+  </header>
 
-  <!-- Overlay Sidebar Mobile -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
+  <!-- ===== CATEGORIA CHIPS ===== -->
+  <div class="cat-chips-bar" id="catChipsBar">
+    <button class="cat-chip active" data-cat="all" onclick="selectCategory('all')">Tutte</button>
+    <!-- Injected by app.js -->
+  </div>
 
-  <!-- Pannello Principale (Tabella/Lista Compatta) -->
+  <!-- ===== BARRA RICERCA ===== -->
+  <div class="search-bar-wrap" id="searchBarWrap">
+    <div class="search-box">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Cerca lavori, note, persone..." oninput="applyFilters()">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
+    </div>
+  </div>
+
+  <!-- ===== CONTENUTO PRINCIPALE ===== -->
   <main class="main-content">
-    
-    <div class="top-bar">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <h2 id="boardTitle">Nome Casa</h2>
-      </div>
-      <button class="btn-primary" onclick="openNewTaskModal()">+ Nuovo Progetto</button>
-    </div>
 
-    <!-- Barra degli Strumenti (Ricerca e Filtri) -->
-    <div class="toolbar">
-      <div class="search-box">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="search-icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="searchInput" placeholder="Cerca progetto o testo nei diari..." oninput="applyFilters()">
-      </div>
-
-      <div class="filters">
-        <select id="filterCategory" onchange="applyFilters()">
-          <option value="all">Tutte le categorie</option>
-          <!-- Injected by app.js -->
-        </select>
-
-        <select id="filterStatus" onchange="applyFilters()">
-          <option value="all">Tutti gli stati</option>
-          <option value="todo">Da iniziare</option>
-          <option value="doing">In lavorazione</option>
-          <option value="waiting">In attesa</option>
-          <option value="done">Completati</option>
-        </select>
+    <!-- TAB: Lavori Attivi -->
+    <div class="tab-content active" id="tab-active">
+      <div class="data-table-container">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th class="col-dot"></th>
+              <th class="col-title" onclick="setSort('title')">Lavoro ↕</th>
+              <th class="col-cat" onclick="setSort('category')">Categoria ↕</th>
+              <th class="col-people">Chi</th>
+              <th class="col-status" onclick="setSort('status')">Stato ↕</th>
+              <th class="col-log">📝</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="no-results" id="noResultsMsg" style="display:none;"></div>
       </div>
     </div>
 
-    <!-- Container Tabella Dati -->
-    <div class="data-table-container">
-      <table class="data-table" id="dataTable">
-        <thead>
-          <tr>
-            <th style="width: 40px;"></th>
-            <th onclick="setSort('title')">Progetto / Attività ↕</th>
-            <th style="width: 15%;">Categoria</th>
-            <th style="width: 15%;" onclick="setSort('status')">Stato ↕</th>
-            <th style="width: 15%; text-align: right;">Diario</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <!-- Injected by app.js -->
-        </tbody>
-      </table>
-      
-      <div class="no-results" id="noResultsMsg" style="display: none;">
-        Nessun progetto trovato con questi filtri.
+    <!-- TAB: Archivio -->
+    <div class="tab-content" id="tab-archive">
+      <div class="archive-header">
+        <span class="archive-title-label">✅ Lavori completati — storico</span>
       </div>
+      <div class="data-table-container">
+        <table class="data-table data-table-archive" id="archiveTable">
+          <thead>
+            <tr>
+              <th class="col-dot"></th>
+              <th class="col-title">Lavoro</th>
+              <th class="col-cat">Categoria</th>
+              <th class="col-people">Chi</th>
+              <th class="col-date">Completato</th>
+              <th class="col-log">📝</th>
+            </tr>
+          </thead>
+          <tbody id="archiveBody"></tbody>
+        </table>
+        <div class="no-results" id="noResultsArchive" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- TAB: Per Persona -->
+    <div class="tab-content" id="tab-persona">
+      <div class="persona-view" id="personaView"></div>
     </div>
 
   </main>
 
-  <!-- Pannello Laterale (Diario / Timeline) -->
+  <!-- ===== PANNELLO LATERALE ===== -->
+  <div class="panel-overlay" id="panelOverlay" onclick="closeTaskPanel()"></div>
   <aside class="task-panel" id="taskPanel">
     <div class="panel-header">
       <div class="panel-top-row">
-        <div>
-          <span class="pt-category" id="tpCategory"></span>
-          <h2 class="pt-title" id="tpTitle">Titolo Task</h2>
-        </div>
+        <select class="pt-cat-select" id="tpCatSelect"></select>
         <button class="close-panel-btn" onclick="closeTaskPanel()">×</button>
       </div>
-
+      <input class="pt-title-input" id="tpTitleInput" placeholder="Titolo lavoro...">
+      <div class="pt-meta" id="tpMeta"></div>
+      <div class="panel-assignees">
+        <div class="assignee-picker" id="tpAssignees"></div>
+      </div>
       <div class="panel-actions">
         <select class="status-select" id="tpStatusSelect" onchange="handleStatusChange(event)">
           <option value="todo">Da iniziare</option>
           <option value="doing">In lavorazione</option>
-          <option value="waiting">In attesa (Risposta/Pezzi)</option>
-          <option value="done">Completato</option>
+          <option value="waiting">In attesa</option>
+          <option value="done">✅ Completato</option>
         </select>
-        <button class="action-btn edit" onclick="openEditTaskModal()" title="Modifica dettagli progetto">✏️ Modifica</button>
-        <button class="action-btn danger" onclick="handleDeleteTaskProcess()" title="Elimina intero progetto">🗑️ Elimina</button>
+        <button class="action-btn danger-btn" onclick="handleDeleteTaskProcess()">🗑️</button>
       </div>
     </div>
 
-    <!-- Timeline dei Log -->
     <div class="panel-body">
-      <div class="timeline" id="tpTimeline">
-        <!-- Injected -->
-      </div>
+      <div class="timeline" id="tpTimeline"></div>
     </div>
 
-    <!-- Add Nuovo Log -->
     <div class="new-log-area">
-      <textarea id="newLogText" placeholder="Scrivi un aggiornamento nel diario... (Preventivo, nota, chiamata)"></textarea>
-      <button class="send-log-btn" onclick="handleSendLog()">Salva Nota</button>
+      <textarea id="newLogText" placeholder="Scrivi una nota nel diario... (Ctrl+Invio per salvare)"></textarea>
+      <button class="send-log-btn" onclick="handleSendLog()">💾 Salva Nota</button>
     </div>
   </aside>
 
 
-  <!-- MODAL Nuova Proprietà -->
-  <div class="overlay" id="rootModal">
-    <div class="modal-box">
-      <h3>Nuova Proprietà</h3>
-      <div class="frm-group">
-        <label>Nome Proprietà</label>
-        <input type="text" id="inpRootName" placeholder="Es. Casa Conversano">
-      </div>
-      <div class="modal-footer">
-        <button class="btn-txt" onclick="document.getElementById('rootModal').classList.remove('open')">Annulla</button>
-        <button class="btn-solid" onclick="saveRootModal()">Salva</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL Nuovo Progetto -->
+  <!-- ===== MODAL: Nuovo Lavoro ===== -->
   <div class="overlay" id="taskModal">
     <div class="modal-box">
-      <h3>Nuovo Progetto</h3>
+      <div class="modal-header">
+        <h3>Nuovo Lavoro</h3>
+        <button class="modal-close-btn" onclick="closeModal('taskModal')">×</button>
+      </div>
       <div class="frm-group">
-        <label>Titolo Progetto *</label>
+        <label>Titolo *</label>
         <input type="text" id="inpTaskTitle" placeholder="Cosa c'è da fare?">
       </div>
-      <div style="display:flex; gap:16px;">
-        <div class="frm-group" style="flex:1;">
-          <label>Categoria</label>
-          <input type="text" id="inpTaskCat" placeholder="Es. Piscina, Impianti (Opzionale)">
-        </div>
+      <div class="frm-group">
+        <label>Categoria *</label>
+        <select id="inpTaskCat"></select>
+      </div>
+      <div class="frm-group">
+        <label>Persone assegnate</label>
+        <div class="assignee-picker" id="newTaskAssignees"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn-txt" onclick="document.getElementById('taskModal').classList.remove('open')">Annulla</button>
-        <button class="btn-solid" onclick="saveTaskModal()">Crea Progetto</button>
+        <button class="btn-txt" onclick="closeModal('taskModal')">Annulla</button>
+        <button class="btn-solid" onclick="saveTaskModal()">Crea Lavoro</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL Modifica Progetto -->
-  <div class="overlay" id="editTaskModal">
+  <!-- ===== MODAL: Gestione Persone ===== -->
+  <div class="overlay" id="peopleModal">
     <div class="modal-box">
-      <h3>Modifica Progetto</h3>
-      <div class="frm-group">
-        <label>Titolo Progetto *</label>
-        <input type="text" id="inpEditTaskTitle" placeholder="Cosa c'è da fare?">
+      <div class="modal-header">
+        <h3>👥 Persone</h3>
+        <button class="modal-close-btn" onclick="closeModal('peopleModal')">×</button>
       </div>
-      <div style="display:flex; gap:16px;">
-        <div class="frm-group" style="flex:1;">
-          <label>Categoria</label>
-          <input type="text" id="inpEditTaskCat" placeholder="Es. Piscina, Impianti (Opzionale)">
+      <div class="people-list" id="peopleList"></div>
+      <div class="add-person-section">
+        <div class="add-person-label">+ Aggiungi persona</div>
+        <div class="frm-group">
+          <label>Nome *</label>
+          <input type="text" id="inpNewPerson" placeholder="Es. Giuseppe">
         </div>
+        <div class="frm-row">
+          <div class="frm-group">
+            <label>Telefono</label>
+            <input type="tel" id="inpNewPhone" placeholder="+39 320 ...">
+          </div>
+          <div class="frm-group">
+            <label>Mansione</label>
+            <input type="text" id="inpNewRole" placeholder="Es. Idraulico">
+          </div>
+        </div>
+        <button class="btn-solid" style="width:100%;" onclick="handleAddPerson()">+ Aggiungi</button>
       </div>
       <div class="modal-footer">
-        <button class="btn-txt" onclick="document.getElementById('editTaskModal').classList.remove('open')">Annulla</button>
-        <button class="btn-solid" onclick="saveEditTaskModal()">Salva Modifiche</button>
+        <button class="btn-solid" onclick="closeModal('peopleModal')">Chiudi</button>
       </div>
     </div>
   </div>
+
+  <!-- ===== MODAL: Import file ===== -->
+  <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="handleImportFile(event)">
 
   <script src="data.js"></script>
   <script src="app.js"></script>
