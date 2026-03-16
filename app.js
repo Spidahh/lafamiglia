@@ -384,6 +384,38 @@ function saveTaskModal() {
   openTaskPanel(task.id);
 }
 
+function openEditTaskModal() {
+  if (!activeTaskId) return;
+  const task = getTask(activeTaskId);
+  if (!task) return;
+
+  document.getElementById('inpEditTaskTitle').value = task.title;
+  document.getElementById('inpEditTaskCat').value = task.category || '';
+  document.getElementById('inpEditTaskPrio').value = task.priority || 'normale';
+  
+  document.getElementById('editTaskModal').classList.add('open');
+}
+
+function saveEditTaskModal() {
+  if (!activeTaskId) return;
+  const title = document.getElementById('inpEditTaskTitle').value.trim();
+  const cat = document.getElementById('inpEditTaskCat').value.trim();
+  const prio = document.getElementById('inpEditTaskPrio').value;
+  
+  if(!title) return;
+  
+  updateTaskDetails(activeTaskId, {
+    title: title,
+    category: cat,
+    priority: prio
+  });
+  
+  document.getElementById('editTaskModal').classList.remove('open');
+  updateCategoryDropdown();
+  applyFilters();
+  openTaskPanel(activeTaskId); // Refresh the currently open panel
+}
+
 document.querySelectorAll('.overlay').forEach(ov => {
   ov.addEventListener('click', e => {
     if(e.target === ov) ov.classList.remove('open');

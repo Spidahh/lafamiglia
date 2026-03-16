@@ -109,7 +109,8 @@
           <option value="waiting">In attesa (Risposta/Pezzi)</option>
           <option value="done">Completato</option>
         </select>
-        <button class="action-btn danger" onclick="handleDeleteTaskProcess()" title="Elimina intero progetto">Elimina</button>
+        <button class="action-btn edit" onclick="openEditTaskModal()" title="Modifica dettagli progetto">✏️ Modifica</button>
+        <button class="action-btn danger" onclick="handleDeleteTaskProcess()" title="Elimina intero progetto">🗑️ Elimina</button>
       </div>
     </div>
 
@@ -168,6 +169,35 @@
       <div class="modal-footer">
         <button class="btn-txt" onclick="document.getElementById('taskModal').classList.remove('open')">Annulla</button>
         <button class="btn-solid" onclick="saveTaskModal()">Crea Progetto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL Modifica Progetto -->
+  <div class="overlay" id="editTaskModal">
+    <div class="modal-box">
+      <h3>Modifica Progetto</h3>
+      <div class="frm-group">
+        <label>Titolo Progetto *</label>
+        <input type="text" id="inpEditTaskTitle" placeholder="Cosa c'è da fare?">
+      </div>
+      <div style="display:flex; gap:16px;">
+        <div class="frm-group" style="flex:1;">
+          <label>Categoria</label>
+          <input type="text" id="inpEditTaskCat" placeholder="Es. Piscina, Impianti (Opzionale)">
+        </div>
+        <div class="frm-group" style="width:140px;">
+          <label>Priorità</label>
+          <select id="inpEditTaskPrio">
+            <option value="alta">Alta</option>
+            <option value="normale">Normale</option>
+            <option value="bassa">Bassa</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-txt" onclick="document.getElementById('editTaskModal').classList.remove('open')">Annulla</button>
+        <button class="btn-solid" onclick="saveEditTaskModal()">Salva Modifiche</button>
       </div>
     </div>
   </div>
