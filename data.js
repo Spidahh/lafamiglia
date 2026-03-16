@@ -12,7 +12,6 @@ const DB_KEY = 'lafamiglia_v3_db';
     tasks: [{ 
       id, rootId, title, 
       status: 'todo' | 'doing' | 'waiting' | 'done',
-      priority: 'alta' | 'normale' | 'bassa',
       category: 'Piscina' | 'Casette' | 'Impianti' | '',
       createdAt,
       logs: [
@@ -29,73 +28,73 @@ const DEFAULT_DATA = {
   tasks: [
     // --- Piscina ---
     {
-      id: 't1', rootId: 'r1', title: 'Manutenzione Piscina (Giuseppe)', status: 'todo', priority: 'alta', category: 'Piscina', createdAt: Date.now(),
+      id: 't1', rootId: 'r1', title: 'Manutenzione Piscina (Giuseppe)', status: 'todo', category: 'Piscina', createdAt: Date.now(),
       logs: [ { id: 'l1_1', date: Date.now() - 86400000, text: 'Chiamare Giuseppe per accordarci sui lavori pre-estivi.' } ]
     },
     {
-      id: 't5', rootId: 'r1', title: 'Ripristino faretti piscina', status: 'todo', priority: 'normale', category: 'Piscina', createdAt: Date.now(),
+      id: 't5', rootId: 'r1', title: 'Ripristino faretti piscina', status: 'todo', category: 'Piscina', createdAt: Date.now(),
       logs: [ { id: 'l5_1', date: Date.now(), text: 'Aggiustare i faretti prima che inizino i bagni serali.' } ]
     },
     {
-      id: 't14', rootId: 'r1', title: 'Ripristino fughe bordo piscina', status: 'todo', priority: 'normale', category: 'Piscina', createdAt: Date.now(),
+      id: 't14', rootId: 'r1', title: 'Ripristino fughe bordo piscina', status: 'todo', category: 'Piscina', createdAt: Date.now(),
       logs: []
     },
     {
-      id: 't15', rootId: 'r1', title: 'Pitturazione porta vano piscina', status: 'todo', priority: 'bassa', category: 'Piscina', createdAt: Date.now(),
+      id: 't15', rootId: 'r1', title: 'Pitturazione porta vano piscina', status: 'todo', category: 'Piscina', createdAt: Date.now(),
       logs: []
     },
 
     // --- Casette ---
     {
-      id: 't6', rootId: 'r1', title: 'Sistemare contatori casette', status: 'todo', priority: 'alta', category: 'Casette', createdAt: Date.now(),
+      id: 't6', rootId: 'r1', title: 'Sistemare contatori casette', status: 'todo', category: 'Casette', createdAt: Date.now(),
       logs: []
     },
     {
-      id: 't7', rootId: 'r1', title: 'Manutenzione condizionatori casette', status: 'todo', priority: 'normale', category: 'Casette', createdAt: Date.now(),
+      id: 't7', rootId: 'r1', title: 'Manutenzione condizionatori casette', status: 'todo', category: 'Casette', createdAt: Date.now(),
       logs: []
     },
     {
-      id: 't8', rootId: 'r1', title: 'Sistemare luci perimetrali casette (1 guasta)', status: 'todo', priority: 'normale', category: 'Casette', createdAt: Date.now(),
+      id: 't8', rootId: 'r1', title: 'Sistemare luci perimetrali casette (1 guasta)', status: 'todo', category: 'Casette', createdAt: Date.now(),
       logs: [ { id: 'l8_1', date: Date.now(), text: 'Una luce non funziona, controllare lampadina e contatti.' } ]
     },
     {
-      id: 't10', rootId: 'r1', title: 'Sistemare doccia in pietra (doccino guasto)', status: 'todo', priority: 'normale', category: 'Casette', createdAt: Date.now(),
+      id: 't10', rootId: 'r1', title: 'Sistemare doccia in pietra (doccino guasto)', status: 'todo', category: 'Casette', createdAt: Date.now(),
       logs: [ { id: 'l10_1', date: Date.now(), text: 'Non esce acqua dal doccino o rompegetto.' } ]
     },
     {
-      id: 't11', rootId: 'r1', title: 'Sostituire rubinetto parcheggio', status: 'todo', priority: 'normale', category: 'Casette', createdAt: Date.now(),
+      id: 't11', rootId: 'r1', title: 'Sostituire rubinetto parcheggio', status: 'todo', category: 'Casette', createdAt: Date.now(),
       logs: []
     },
     {
-      id: 't13', rootId: 'r1', title: 'Verificare docce esterne', status: 'todo', priority: 'normale', category: 'Casette', createdAt: Date.now(),
+      id: 't13', rootId: 'r1', title: 'Verificare docce esterne', status: 'todo', category: 'Casette', createdAt: Date.now(),
       logs: []
     },
 
     // --- Esterni / Orto ---
     {
-      id: 't12', rootId: 'r1', title: 'Sostituire rubinetto + snodo orto', status: 'todo', priority: 'normale', category: 'Orto', createdAt: Date.now(),
+      id: 't12', rootId: 'r1', title: 'Sostituire rubinetto + snodo orto', status: 'todo', category: 'Orto', createdAt: Date.now(),
       logs: []
     },
     {
-      id: 't3', rootId: 'r1', title: 'Acquisto Cancelletti bambini (x7) e ombreggianti scala', status: 'todo', priority: 'alta', category: 'Esterni', createdAt: Date.now(),
+      id: 't3', rootId: 'r1', title: 'Acquisto Cancelletti bambini (x7) e ombreggianti scala', status: 'todo', category: 'Esterni', createdAt: Date.now(),
       logs: [ { id: 'l3_1', date: Date.now(), text: 'Servono 7 cancelletti per sicurezza. Prendere misure.' } ]
     },
 
     // --- Impianti / Acquisti ---
     {
-      id: 't2', rootId: 'r1', title: 'Comprare pompa di sentina', status: 'todo', priority: 'normale', category: 'Impianti', createdAt: Date.now(),
+      id: 't2', rootId: 'r1', title: 'Comprare pompa di sentina', status: 'todo', category: 'Impianti', createdAt: Date.now(),
       logs: []
     },
     {
-      id: 't4', rootId: 'r1', title: 'Comprare piano induzione', status: 'todo', priority: 'normale', category: 'Impianti', createdAt: Date.now(),
+      id: 't4', rootId: 'r1', title: 'Comprare piano induzione', status: 'todo', category: 'Impianti', createdAt: Date.now(),
       logs: [ { id: 'l4_1', date: Date.now(), text: 'Cercare offerte su Amazon e Mediaworld.' } ]
     },
     {
-      id: 't9', rootId: 'r1', title: 'Verifica pressione Acqua (forse aria)', status: 'todo', priority: 'alta', category: 'Impianti', createdAt: Date.now(),
+      id: 't9', rootId: 'r1', title: 'Verifica pressione Acqua (forse aria)', status: 'todo', category: 'Impianti', createdAt: Date.now(),
       logs: [ { id: 'l9_1', date: Date.now(), text: 'C’è problema di pressione. Fare sfiatare impianto o chiamare idraulico.' } ]
     },
     {
-      id: 't16', rootId: 'r1', title: 'Verifica impianto fotovoltaico', status: 'done', priority: 'normale', category: 'Impianti', createdAt: Date.now() - 500000000,
+      id: 't16', rootId: 'r1', title: 'Verifica impianto fotovoltaico', status: 'done', category: 'Impianti', createdAt: Date.now() - 500000000,
       logs: [ { id: 'l16_1', date: Date.now() - 10000, text: 'Controllata app, l\'inverter produce correttamente.' } ]
     }
   ]
@@ -150,11 +149,11 @@ function deleteRoot(id) {
 function getTasks(rootId) { return loadDB().tasks.filter(t => t.rootId === rootId); }
 function getTask(id) { return loadDB().tasks.find(t => t.id === id); }
 
-function addTask(rootId, title, priority, category) {
+function addTask(rootId, title, category) {
   const db = loadDB();
   const task = { 
     id: 't' + Date.now(), rootId, title, 
-    status: 'todo', priority, category: category || '', 
+    status: 'todo', category: category || '', 
     createdAt: Date.now(), logs: [] 
   };
   db.tasks.unshift(task); // in cima

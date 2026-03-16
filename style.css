@@ -21,11 +21,6 @@
   --s-doing-bg: #EEF2FF; --s-doing-txt: #4338CA;
   --s-wait-bg:  #FEF3C7; --s-wait-txt: #B45309;
   --s-done-bg:  #ECFDF5; --s-done-txt: #059669;
-
-  --p-alta-bg:  #FEF2F2; --p-alta-txt: #DC2626;
-  --p-norm-bg:  #F8FAFC; --p-norm-txt: #64748B;
-  --p-bassa-bg: #F0F9FF; --p-bassa-txt: #0369A1;
-  
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -146,12 +141,6 @@ body {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--border);
 }
 
-/* High Priority Indicator */
-.data-table tbody tr.is-alta::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-  background: #EF4444; border-radius: 8px 0 0 8px;
-}
-
 .data-table td { padding: 14px 16px; vertical-align: middle; }
 
 /* Stato Pallino */
@@ -172,16 +161,8 @@ body {
 }
 .sp-todo { background: var(--s-todo-bg); color: var(--s-todo-txt); }
 .sp-doing { background: var(--s-doing-bg); color: var(--s-doing-txt); }
-.sp-waiting { background: var(--s-wait-bg); color: var(--s-wait-txt); }
+.sp-wait { background: var(--s-wait-bg); color: var(--s-wait-txt); }
 .sp-done { background: var(--s-done-bg); color: var(--s-done-txt); }
-
-/* Priority Pill */
-.prio-pill {
-  padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-}
-.pr-alta { background: var(--p-alta-bg); color: var(--p-alta-txt); }
-.pr-normale { background: var(--p-norm-bg); color: var(--p-norm-txt); }
-.pr-bassa { background: var(--p-bassa-bg); color: var(--p-bassa-txt); }
 
 /* Note indicator */
 .log-indicator {
@@ -356,9 +337,8 @@ body {
     position: absolute; top: 16px; right: 16px; text-align: right;
   }
   
-  /* 5 & 6. Bottom row: Priority & Logs */
-  .data-table td:nth-child(5) { display: inline-block; width: auto; text-align: left; margin-top: 4px; }
-  .data-table td:nth-child(6) { 
+  /* 5. Logs */
+  .data-table td:nth-child(5) { 
     position: absolute; bottom: 16px; right: 16px; text-align: right;
     display: flex; align-items: center; justify-content: flex-end; width: auto;
   }

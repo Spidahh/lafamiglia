@@ -177,9 +177,6 @@ function renderMainBoard() {
     } else if (currentSortCol === 'status') {
       const w = { 'todo': 1, 'doing': 2, 'waiting': 3, 'done': 4 };
       tasks.sort((a,b) => (w[a.status] - w[b.status]) * sortDirection);
-    } else if (currentSortCol === 'prio') {
-      const w = { 'alta': 1, 'normale': 2, 'bassa': 3 };
-      tasks.sort((a,b) => (w[a.priority] - w[b.priority]) * sortDirection);
     } else {
       // Ordine di default: Non completati prima, più recenti in alto.
       tasks.sort((a,b) => {
@@ -194,14 +191,6 @@ function renderMainBoard() {
       if (task.status === 'done') tr.style.opacity = '0.6';
       
       tr.onclick = () => openTaskPanel(task.id);
-
-      if (task.priority === 'alta') tr.classList.add('is-alta');
-
-      // Sort priority pill
-      let prioHtml = '';
-      if(task.priority === 'alta') prioHtml = `<span class="prio-pill pr-alta">Urgente</span>`;
-      else if(task.priority === 'normale') prioHtml = `<span class="prio-pill pr-normale">—</span>`;
-      else prioHtml = `<span class="prio-pill pr-bassa">Bassa</span>`;
 
       // Log display
       const hasLogs = task.logs && task.logs.length > 0;
@@ -230,7 +219,6 @@ function renderMainBoard() {
         </td>
         <td><span class="cat-badge">${hl(task.category) || '-'}</span></td>
         <td><span class="status-pill sp-${task.status}">${STATUS_LABELS[task.status]}</span></td>
-        <td style="text-align: center;">${prioHtml}</td>
         <td style="text-align: right;">${logHtml}</td>
       `;
       tbody.appendChild(tr);
@@ -368,16 +356,14 @@ function handleDeleteRoot(id, e) {
 function openNewTaskModal() {
   document.getElementById('inpTaskTitle').value = '';
   document.getElementById('inpTaskCat').value = '';
-  document.getElementById('inpTaskPrio').value = 'normale';
   document.getElementById('taskModal').classList.add('open');
 }
 function saveTaskModal() {
   const title = document.getElementById('inpTaskTitle').value.trim();
   let cat = document.getElementById('inpTaskCat').value.trim();
-  const prio = document.getElementById('inpTaskPrio').value;
   if(!title) return;
   
-  const task = addTask(activeRootId, title, prio, cat);
+  const task = addTask(activeRootId, title, cat);
   document.getElementById('taskModal').classList.remove('open');
   updateCategoryDropdown();
   applyFilters();
@@ -391,7 +377,6 @@ function openEditTaskModal() {
 
   document.getElementById('inpEditTaskTitle').value = task.title;
   document.getElementById('inpEditTaskCat').value = task.category || '';
-  document.getElementById('inpEditTaskPrio').value = task.priority || 'normale';
   
   document.getElementById('editTaskModal').classList.add('open');
 }
@@ -400,14 +385,12 @@ function saveEditTaskModal() {
   if (!activeTaskId) return;
   const title = document.getElementById('inpEditTaskTitle').value.trim();
   const cat = document.getElementById('inpEditTaskCat').value.trim();
-  const prio = document.getElementById('inpEditTaskPrio').value;
   
   if(!title) return;
   
   updateTaskDetails(activeTaskId, {
     title: title,
-    category: cat,
-    priority: prio
+    category: cat
   });
   
   document.getElementById('editTaskModal').classList.remove('open');
