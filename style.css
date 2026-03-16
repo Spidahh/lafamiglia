@@ -236,7 +236,7 @@ body {
    MODALS 
    ============================================================ */
 .overlay {
-  position: fixed; inset: 0; background: rgba(17,24,39,0.5); backdrop-filter: blur(2px);
+  position: fixed; inset: 0; background: rgba(17,24,39,0.5); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
   z-index: 500; display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none; transition: 0.2s;
 }
@@ -262,3 +262,90 @@ body {
 .btn-txt:hover { color: var(--text-main); }
 .btn-solid { background: var(--text-main); color: #fff; border:none; padding: 10px 24px; border-radius: 6px; font-weight: 600; cursor: pointer;}
 .btn-solid:hover { background: #000; }
+
+/* ============================================================
+   MOBILE OVERRIDES & RESPONSIVENESS
+   ============================================================ */
+.mobile-menu-btn {
+  display: none; background: none; border: none; color: var(--text-main);
+  cursor: pointer; padding: 4px; border-radius: 4px;
+}
+.mobile-menu-btn:hover { background: rgba(0,0,0,0.05); }
+
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 10; opacity: 0; transition: opacity 0.3s;
+}
+
+@media (max-width: 850px) {
+  .sidebar {
+    position: fixed; left: -260px; top: 0; bottom: 0; width: 260px;
+    z-index: 20; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+  }
+  body.sidebar-open .sidebar { left: 0; }
+  
+  .sidebar-overlay { display: block; pointer-events: none; }
+  body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: all; }
+
+  .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+  
+  .main-content { padding: 20px 16px; width: 100vw; }
+  
+  .top-bar h2 { font-size: 1.35rem; }
+  
+  .toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
+  .filters { flex-direction: column; width: 100%; }
+  .filters select { width: 100%; }
+
+  .data-table-container { background: transparent; border: none; box-shadow: none; border-radius: 0; }
+  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+  
+  .data-table thead { display: none; } /* Hide headers on mobile */
+  
+  .data-table tbody tr {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: relative; cursor: pointer; display: flex; flex-direction: column; gap: 8px;
+  }
+  .data-table tbody tr:last-child { margin-bottom: 0; border-bottom: 1px solid var(--border); }
+  .data-table tbody tr:hover { background: #fff; border-color: var(--primary); }
+
+  /* Reformatted Data Table Cells for Cards */
+  .data-table td { padding: 0; border: none; }
+  
+  /* 1. Status dot -> absolute top right or hide it */
+  .data-table td:nth-child(1) { display: none; } 
+  
+  /* 2. Title & Context */
+  .data-table td:nth-child(2) { padding-right: 80px; } /* space for status pill */
+  .row-title { font-size: 1.05rem; }
+  
+  /* 3. Category */
+  .data-table td:nth-child(3) { display: none; } /* Category hidden, or we keep it inline? Let's hide to save space or show it small */
+  
+  /* 4. Status Pill -> Absolute top right */
+  .data-table td:nth-child(4) { 
+    position: absolute; top: 16px; right: 16px; text-align: right;
+  }
+  
+  /* 5 & 6. Bottom row: Priority & Logs */
+  .data-table td:nth-child(5) { display: inline-block; width: auto; text-align: left; margin-top: 4px; }
+  .data-table td:nth-child(6) { 
+    position: absolute; bottom: 16px; right: 16px; text-align: right;
+    display: flex; align-items: center; justify-content: flex-end; width: auto;
+  }
+
+  /* Task Panel Full Width */
+  .task-panel { width: 100%; right: -100%; }
+  .panel-header { padding: 20px 16px; }
+  .panel-body { padding: 20px 16px; }
+  .new-log-area { padding: 16px; }
+
+  /* Modals Full Width */
+  .modal-box { padding: 24px 20px; width: calc(100% - 32px); margin: 0 16px; }
+  .frm-group[style*="flex:1"] { flex: unset; width: 100%; }
+  div[style*="display:flex; gap:16px;"] { flex-direction: column; gap: 0; }
+  .frm-group[style*="width:140px;"] { width: 100%; }
+}
+

@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
   else renderMainBoard();
 });
 
+// Mobile menu toggle
+function toggleMobileMenu() {
+  document.body.classList.toggle('sidebar-open');
+}
+
 // ============================================================
 //  SIDEBAR
 // ============================================================
@@ -49,6 +54,9 @@ function selectRoot(id) {
   renderSidebar();
   updateCategoryDropdown();
   renderMainBoard();
+  
+  // Close mobile sidebar if open
+  document.body.classList.remove('sidebar-open');
 }
 
 function updateCategoryDropdown() {
@@ -168,7 +176,10 @@ function renderMainBoard() {
       tr.innerHTML = `
         <td style="text-align: center;"><span class="status-dot s-dot-${task.status}"></span></td>
         <td>
-          <span class="row-title" style="${task.status==='done'?'text-decoration:line-through':''}">${escHtml(task.title)}</span>
+          <div style="display:flex; flex-direction:column; gap:2px;">
+             ${task.category ? `<span class="cat-badge" style="font-size: 0.75rem; text-transform:uppercase; color:var(--text-muted);">${escHtml(task.category)}</span>` : ''}
+             <span class="row-title" style="${task.status==='done'?'text-decoration:line-through':''}">${escHtml(task.title)}</span>
+          </div>
           ${hasLogs ? `<span class="row-context">${escHtml(task.logs[task.logs.length-1].text).substring(0, 60)}...</span>` : ''}
         </td>
         <td><span class="cat-badge">${escHtml(task.category) || '-'}</span></td>

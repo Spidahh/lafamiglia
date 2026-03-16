@@ -27,11 +27,19 @@
     <button class="add-root-btn" onclick="openNewRootModal()">+ Nuova Proprietà</button>
   </aside>
 
+  <!-- Overlay Sidebar Mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
+
   <!-- Pannello Principale (Tabella/Lista Compatta) -->
   <main class="main-content">
     
     <div class="top-bar">
-      <h2 id="boardTitle">Nome Casa</h2>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <h2 id="boardTitle">Nome Casa</h2>
+      </div>
       <button class="btn-primary" onclick="openNewTaskModal()">+ Nuovo Progetto</button>
     </div>
 
